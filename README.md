@@ -1,4 +1,4 @@
-# CraftBeerPi 4
+# CraftBeerPi 5
 
 [![Build](https://github.com/craftbeerpi/craftbeerpi4/actions/workflows/build.yml/badge.svg)](https://github.com/craftbeerpi/craftbeerpi4/actions/workflows/build.yml)
 [![GitHub license](https://img.shields.io/github/license/craftbeerpi/craftbeerpi4)](https://github.com/craftbeerpi/craftbeerpi4/blob/master/LICENSE)
@@ -10,7 +10,7 @@
   <img src="https://github.com/craftbeerpi/craftbeerpi4-ui/blob/main/cbpi4ui/public/logo192.png?raw=true" alt="CraftBeerPi Logo"/>
 </p>
 
-CraftBeerPi 4 is an open source software solution to control the brewing and
+CraftBeerPi 5 is an open source software solution to control the brewing and
 fermentation of beer :beer:.
 
 ## 📚 Documentation
@@ -18,11 +18,11 @@ Instructions on how to install CraftBeerPi and use its plugins is described
 in the documentation, that can be found here: [gitbook.io](https://openbrewing.gitbook.io/craftbeerpi4_support/).
 
 ### Plugins
-Plugins extend the base functionality of CraftBeerPi 4.
+Plugins extend the base functionality of CraftBeerPi 5.
 You can find a list of available plugins [here](https://openbrewing.gitbook.io/craftbeerpi4_support/master/plugin-installation#plugin-list).
 
 ## 🧑‍🤝‍🧑 Contribute
-You want to help develop CraftBeerPi4? To get you quickly stated, this repository comes with a preconfigured
+You want to help develop CraftBeerPi5? To get you quickly stated, this repository comes with a preconfigured
 development environment. To be able to use this environment you need 2 things installed on your computer:
 
 - docker

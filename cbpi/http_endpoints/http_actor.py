@@ -24,7 +24,7 @@ class ActorHttpEndpoints():
         """
         return web.json_response(data=self.controller.get_state())
 
-    @request_mapping(path="/{id:\w+}", auth_required=False)
+    @request_mapping(path=r"/{id:\w+}", auth_required=False)
     async def http_get_one(self, request):
         """
         ---

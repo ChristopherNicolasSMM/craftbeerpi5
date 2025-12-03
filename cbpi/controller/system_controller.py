@@ -37,23 +37,23 @@ class SystemController:
         pass
 
     async def backupConfig(self):
-        output_filename = "cbpi4_config"
+        output_filename = "cbpi5_config"
         dir_name = pathlib.Path(self.cbpi.config_folder.get_file_path(''))
         shutil.make_archive(output_filename, 'zip', dir_name)
 
     async def downloadlog(self, logtime):
-        filename = "cbpi4.log"
+        filename = "cbpi5.log"
         fullname = pathlib.Path(os.path.join(".",filename))
-        pluginname = "cbpi4_plugins.txt"
+        pluginname = "cbpi5_plugins.txt"
         fullpluginname = pathlib.Path(os.path.join(".",pluginname))
-        actorname = "cbpi4_actors.txt"
+        actorname = "cbpi5_actors.txt"
         fullactorname = pathlib.Path(os.path.join(".",actorname))
-        sensorname = "cbpi4_sensors.txt"
+        sensorname = "cbpi5_sensors.txt"
         fullsensorname = pathlib.Path(os.path.join(".",sensorname))
-        kettlename = "cbpi4_kettles.txt"
+        kettlename = "cbpi5_kettles.txt"
         fullkettlename = pathlib.Path(os.path.join(".",kettlename))
 
-        output_filename="cbpi4_log.zip"
+        output_filename="cbpi5_log.zip"
 
         if logtime == "b":
             os.system('journalctl -b -u craftbeerpi.service > {}'.format(fullname))

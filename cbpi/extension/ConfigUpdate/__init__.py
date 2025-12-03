@@ -234,7 +234,7 @@ class ConfigUpdate(CBPiExtension):
         if influxdbname is None:
             logger.info("INIT Influxdbname")
             try:
-                await self.cbpi.config.add("INFLUXDBNAME", "cbpi4", ConfigType.STRING, "Name of your influxdb database name (If INFLUXDBCLOUD set to Yes use bucket of your influxdb cloud database)")
+                await self.cbpi.config.add("INFLUXDBNAME", "cbpi5", ConfigType.STRING, "Name of your influxdb database name (If INFLUXDBCLOUD set to Yes use bucket of your influxdb cloud database)")
             except:
                 logger.warning('Unable to update config')
 

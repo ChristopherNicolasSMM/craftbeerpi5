@@ -43,7 +43,7 @@ class SystemHttpEndpoints:
     @request_mapping(path="/logs", auth_required=False)
     async def http_get_log(self, request):
         result = []
-        file_pattern = re.compile("^(\w+.).log(.?\d*)")
+        file_pattern = re.compile(r"^(\w+.).log(.?\d*)")
         for filename in sorted(os.listdir("./logs"), reverse=True):  #
             if file_pattern.match(filename):
                 result.append(filename)
@@ -134,7 +134,7 @@ class SystemHttpEndpoints:
                 application/zip:  # Media type
         """
         await self.controller.backupConfig()
-        filename = "cbpi4_config.zip"
+        filename = "cbpi5_config.zip"
         file_name = pathlib.Path(os.path.join(".", filename))
 
         response = web.StreamResponse(
@@ -166,7 +166,7 @@ class SystemHttpEndpoints:
         """
         logtime = request.match_info['logtime']
         await self.controller.downloadlog(logtime)
-        filename = "cbpi4_log.zip"
+        filename = "cbpi5_log.zip"
         file_name = pathlib.Path(os.path.join(".", filename))
 
         response = web.StreamResponse(

@@ -13,7 +13,7 @@ from colorama import Fore, Back, Style
 import importlib
 from importlib_metadata import metadata
 from tabulate import tabulate
-from PyInquirer import prompt, print_json
+# PyInquirer removed - using standard input() instead for Python 3.13 compatibility
 import platform
 
 class CraftBeerPiCli():
@@ -75,22 +75,17 @@ class CraftBeerPiCli():
         print("Plugin Creation")
         print("")
 
-        questions = [
-            {
-                'type': 'input',
-                'name': 'name',
-                'message': 'Plugin Name:',
-            }
-        ]
+        plugin_name = input("Plugin Name: ").strip()
+        if not plugin_name:
+            print("Plugin name cannot be empty")
+            return
 
-        answers = prompt(questions)
-
-        name = "cbpi4_" + answers["name"]
+        name = "cbpi5_" + plugin_name
         if os.path.exists(os.path.join(".", name)) is True:
             print("Cant create Plugin. Folder {} already exists ".format(name))
             return
 
-        url = 'https://github.com/Manuel83/craftbeerpi4-plugin-template/archive/main.zip'
+        url = 'https://github.com/Manuel83/craftbeerpi5-plugin-template/archive/main.zip'
         r = requests.get(url)
         with open('temp.zip', 'wb') as f:
             f.write(r.content)
@@ -98,7 +93,7 @@ class CraftBeerPiCli():
         with ZipFile('temp.zip', 'r') as repo_zip:
             repo_zip.extractall()
 
-        os.rename("./craftbeerpi4-plugin-template-main", os.path.join(".", name))
+        os.rename("./craftbeerpi5-plugin-template-main", os.path.join(".", name))
         os.rename(os.path.join(".", name, "src"), os.path.join(".", name, name))
 
         import jinja2
@@ -133,7 +128,7 @@ class CraftBeerPiCli():
         print("")
         print("Plugin {}{}{} created! ".format(Fore.LIGHTGREEN_EX, name, Style.RESET_ALL) )
         print("")
-        print("Developer Documentation: https://openbrewing.gitbook.io/craftbeerpi4_support/readme/development")
+        print("Developer Documentation: https://openbrewing.gitbook.io/craftbeerpi5_support/readme/development")
         print("")
         print("Happy developing! Cheers")
         print("")

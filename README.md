@@ -78,6 +78,8 @@ Após iniciar o servidor, acesse a interface web:
    ```bash
    pip install -r requirements.txt
    ```
+   
+   > **Nota:** O `cbpi5ui` será instalado automaticamente do repositório GitHub conforme configurado no `requirements.txt`. Para instalar manualmente ou de um commit específico, veja [Guia de Instalação do cbpi5ui](docs/INSTALACAO_CBPI5UI.md).
 
 ---
 

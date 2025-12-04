@@ -50,7 +50,8 @@ setup(name='cbpi',
           'colorama>=0.4.6,<1.0.0',
           'psutil>=5.9.0,<6.0.0',
           # 'cbpi5ui',  # Referência original do PyPI (comentada para usar GitHub)
-          'cbpi5ui @ git+https://github.com/ChristopherNicolasSMM/craftbeerpi5-ui.git@main',  # Instalação do repositório GitHub
+          'cbpi5ui @ git+https://github.com/ChristopherNicolasSMM/craftbeerpi5-ui.git@main',  # Instalação do repositório GitHub (branch main)
+          #'cbpi5ui @ git+https://github.com/ChristopherNicolasSMM/craftbeerpi5-ui.git@860c88b24053f67eca5d96020fdcc2b30580b283',  # Instalação do repositório GitHub (commit específico)
           'importlib_metadata>=6.0.0,<8.0.0',
           'numpy>=2.1.0,<3.0.0',
           'pandas>=2.0.0,<3.0.0',

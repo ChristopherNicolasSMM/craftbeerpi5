@@ -13,46 +13,105 @@ from tabulate import tabulate
 
 from ..api.step import StepMove, StepResult, StepState
 
+"""
+================================================================================
+CONTROLLER: StepController
+================================================================================
+Gerencia etapas do processo de brassagem.
 
+Uma etapa (step) representa uma fase do processo de brassagem, como:
+- Aquecimento
+- Mash (mosturação)
+- Sparge (lavagem)
+- Boil (fervura)
+- Hop addition (adição de lúpulo)
+
+Responsabilidades:
+- Gerenciar sequência de etapas
+- Controlar execução de etapas ativas
+- Persistir estado em step_data.json
+- Registrar tipos de etapas disponíveis
+
+Fluxo:
+1. Etapas são criadas e adicionadas à sequência
+2. Etapas podem estar em estados: I (Idle), A (Active), D (Done)
+3. Apenas uma etapa pode estar ativa por vez
+4. Ao completar, próxima etapa é iniciada automaticamente
+"""
 class StepController:
 
     def __init__(self, cbpi):
+        """
+        Inicializa o controller de etapas.
+        
+        Args:
+            cbpi: Instância principal do CraftBeerPi
+        """
         self.cbpi = cbpi
         self.logger = logging.getLogger(__name__)
-        self.path = self.cbpi.config_folder.get_file_path("step_data.json")
-        #self._loop = asyncio.get_event_loop() 
-        self.basic_data = {}
-        self.step = None
-        self.types = {}
-        self.cbpi.app.on_cleanup.append(self.shutdown)
+        self.path = self.cbpi.config_folder.get_file_path("step_data.json")  # Arquivo de persistência
+        self.basic_data = {}  # Dados básicos da receita
+        self.step = None  # Etapa atualmente em execução
+        self.types = {}  # Tipos de etapas registradas (mashstep, boil, etc.)
+        self.cbpi.app.on_cleanup.append(self.shutdown)  # Registra limpeza ao encerrar
     
     async def init(self):
+        """
+        Inicializa o controller e carrega etapas salvas.
+        
+        Se startActive=True, reinicia etapas que estavam ativas antes do shutdown.
+        """
         logging.info("INIT STEP Controller")
         self.load(startActive=True)
 
-
     def create(self, data):
+        """
+        Cria uma nova etapa.
         
+        Args:
+            data: Dicionário com dados da etapa (id, name, type, status, props)
+        
+        Returns:
+            Objeto Step criado
+        
+        Processo:
+        1. Extrai dados do dicionário
+        2. Busca classe do tipo de etapa nos tipos registrados
+        3. Cria instância da classe de etapa
+        4. Retorna objeto Step
+        """
         id = data.get("id")
         name = data.get("name")
         type = data.get("type")
-        status = StepState(data.get("status", "I"))
+        status = StepState(data.get("status", "I"))  # Estado padrão: Idle
         props = Props(data.get("props", {}))
 
         try:
+            # Busca configuração do tipo de etapa
             type_cfg = self.types.get(type)
             clazz = type_cfg.get("class")
+            # Cria instância da etapa (passa callback 'done' para quando completar)
             instance = clazz(self.cbpi, id, name, props, self.done)
         except Exception as e:
             logging.warning("Failed to create step instance %s - %s"  % (id, e))
             instance = None
-        step=Step(id, name, type=type, status=status, instance=instance, props=props )
+        step = Step(id, name, type=type, status=status, instance=instance, props=props)
         return step
 
-
     def load(self, startActive=False):
+        """
+        Carrega etapas do arquivo de persistência.
         
-        # create file if not exists
+        Args:
+            startActive: Se True, reinicia etapas que estavam ativas
+        
+        Processo:
+        1. Cria arquivo se não existir
+        2. Carrega dados do JSON
+        3. Recria objetos Step
+        4. Reinicia etapa ativa se startActive=True
+        """
+        # Cria arquivo se não existir
         if os.path.exists(self.path) is False:
             with open(self.path, "w") as file:
                 json.dump(dict(basic={}, steps=[]), file, indent=4, sort_keys=True)

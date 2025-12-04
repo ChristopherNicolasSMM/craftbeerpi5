@@ -5,22 +5,49 @@ import traceback
 import async_timeout
 import time
 
+"""
+================================================================================
+CLASSE: Job
+================================================================================
+Representa uma tarefa assíncrona gerenciada pelo Scheduler.
 
+Uma Job encapsula uma corrotina e gerencia seu ciclo de vida:
+- Criação e agendamento
+- Execução
+- Cancelamento
+- Tratamento de exceções
+
+Estados possíveis:
+- pending: Aguardando para iniciar
+- active: Em execução
+- closed: Finalizada ou cancelada
+"""
 class Job:
-    _source_traceback = None
-    _closed = False
-    _explicit = False
-    _task = None
+    _source_traceback = None  # Stack trace para debug
+    _closed = False  # Se a job foi fechada
+    _explicit = False  # Se o fechamento foi explícito (vs. erro)
+    _task = None  # Task asyncio da corrotina
 
     def __init__(self, coro, name, type, scheduler, loop):
+        """
+        Inicializa uma nova Job.
+        
+        Args:
+            coro: Corrotina a ser executada
+            name: Nome da job (para logs)
+            type: Tipo da job (ex: "background", "step")
+            scheduler: Scheduler que gerencia esta job
+            loop: Event loop asyncio
+        """
         self._loop = loop
         self.name = name
         self.type = type
-        self.start_time = time.time()
-        self._coro = coro
-        self._scheduler = scheduler
-        self._started = loop.create_future()
+        self.start_time = time.time()  # Timestamp de início
+        self._coro = coro  # Corrotina a ser executada
+        self._scheduler = scheduler  # Referência ao scheduler
+        self._started = loop.create_future()  # Future que sinaliza quando job inicia
 
+        # Captura stack trace se debug estiver habilitado
         if loop.get_debug():
             self._source_traceback = traceback.extract_stack(sys._getframe(2))
 

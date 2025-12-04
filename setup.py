@@ -49,7 +49,7 @@ setup(name='cbpi',
           # 'PyInquirer==1.0.3',  # Removed - not compatible with Python 3.13, using standard input() instead
           'colorama>=0.4.6,<1.0.0',
           'psutil>=5.9.0,<6.0.0',
-          'cbpi4ui',
+          'cbpi5ui',
           'importlib_metadata>=6.0.0,<8.0.0',
           'numpy>=2.1.0,<3.0.0',
           'pandas>=2.0.0,<3.0.0',

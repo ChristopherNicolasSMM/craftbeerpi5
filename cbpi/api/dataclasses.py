@@ -5,7 +5,32 @@ from cbpi.api.step import StepState
 from dataclasses import dataclass, field
 from typing import List
 
+"""
+================================================================================
+DATACLASSES: Estruturas de Dados do Sistema
+================================================================================
+Este módulo define as estruturas de dados principais usadas no sistema:
+- Props: Container para propriedades/configurações
+- Actor: Representa um atuador
+- Sensor: Representa um sensor
+- Kettle: Representa uma panela
+- Fermenter: Representa um fermentador
+- Step: Representa uma etapa de processo
+"""
+
 class Props:
+    """
+    Container para propriedades/configurações de componentes.
+    
+    Props é um dicionário especial que permite acesso via atributos
+    (ex: props.temperature) além de acesso via chaves (ex: props['temperature']).
+    
+    Usado para armazenar configurações de:
+    - Atores (ex: GPIO pin, power level)
+    - Sensores (ex: device address, calibration)
+    - Panelas (ex: target temperature, hysteresis)
+    - Etapas (ex: duration, target values)
+    """
 
     def __init__(self, data={}):
         super(Props, self).__setattr__('__data__', {})

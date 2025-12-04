@@ -12,40 +12,95 @@ from importlib_metadata import metadata, version
 
 logger = logging.getLogger(__name__)
 
+"""
+================================================================================
+CONTROLLER: PluginController
+================================================================================
+Gerencia plugins e extensões do sistema.
+
+Plugins podem:
+- Adicionar novos tipos de atuadores, sensores, etapas, etc.
+- Estender funcionalidades do sistema
+- Adicionar endpoints HTTP customizados
+- Registrar handlers de eventos
+
+Tipos de plugins:
+1. Plugins internos: em cbpi/extension/ (incluídos no código)
+2. Plugins externos: instalados via pip (nome começa com 'cbpi')
+
+Processo de carregamento:
+1. Carrega plugins internos de cbpi/extension/
+2. Descobre plugins externos instalados
+3. Chama setup() de cada plugin para registro
+"""
 class PluginController():
-    modules = {}
-    types = {}
+    modules = {}  # Módulos de plugins carregados
+    types = {}  # Tipos registrados pelos plugins
 
     def __init__(self, cbpi):
+        """
+        Inicializa o controller de plugins.
+        
+        Args:
+            cbpi: Instância principal do CraftBeerPi
+        """
         self.cbpi = cbpi
 
     def load_plugins(self):
-
+        """
+        Carrega plugins internos da pasta cbpi/extension/.
+        
+        Processo:
+        1. Lista diretórios em cbpi/extension/
+        2. Para cada diretório, verifica config.yaml
+        3. Se active=True e version=4, carrega o plugin
+        4. Chama setup() do plugin para registro
+        
+        Nota: Versão 4 é para compatibilidade com CraftBeerPi 4.
+              Para CraftBeerPi 5, deveria ser version=5, mas mantido
+              como 4 para compatibilidade com plugins existentes.
+        """
         this_directory = os.sep.join(
             os.path.abspath(__file__).split(os.sep)[:-1])
+        # Itera sobre diretórios em cbpi/extension/
         for filename in os.listdir(os.path.join(this_directory, "../extension")):
+            # Ignora se não for diretório ou for __pycache__
             if os.path.isdir(
                     os.path.join(this_directory, "../extension/") + filename) is False or filename == "__pycache__":
                 continue
             try:
                 logger.info("Trying to load plugin %s" % filename)
+                # Carrega config.yaml do plugin
                 data = load_config(os.path.join(
                     this_directory, "../extension/%s/config.yaml" % filename))
+                # Verifica se plugin está ativo e compatível
                 if (data.get("active") is True and data.get("version") == 4):
+                    # Importa e carrega o plugin
                     self.modules[filename] = import_module(
                         "cbpi.extension.%s" % (filename))
+                    # Chama setup() do plugin para registro
                     self.modules[filename].setup(self.cbpi)
-                    # logger.info("Plugin %s loaded successful" % filename)
                 else:
                     logger.warning(
                         "Plugin %s is not supporting version 4" % filename)
 
             except Exception as e:
-
                 logger.error(e)
 
     def load_plugins_from_evn(self):
-
+        """
+        Carrega plugins externos instalados no ambiente Python.
+        
+        Descobre módulos Python que:
+        - Começam com 'cbpi' (ex: cbpi5_meuplugin)
+        - Têm mais de 4 caracteres (exclui 'cbpi' base)
+        
+        Processo:
+        1. Itera sobre todos os módulos Python instalados
+        2. Filtra módulos que começam com 'cbpi'
+        3. Tenta importar e chamar setup() de cada um
+        """
+        # Descobre plugins instalados
         discovered_plugins = {
             name: importlib.import_module(name)
             for finder, name, ispkg
@@ -53,11 +108,13 @@ class PluginController():
             if name.startswith('cbpi') and len(name) > 4
         }
 
+        # Carrega cada plugin descoberto
         for key, value in discovered_plugins.items():
             from importlib.metadata import version
             try:
                 logger.info("Try to load plugin:  {} == {} ".format(
                     key, version(key)))
+                # Chama setup() do plugin para registro
                 value.setup(self.cbpi)
                 logger.info("Plugin {} loaded successfully".format(key))
             except Exception as e:
@@ -65,14 +122,26 @@ class PluginController():
                 logger.error(e)
 
     def register(self, name, clazz) -> None:
-        '''
-        Register a new actor type
-        :param name: actor name
-        :param clazz: actor class
-        :return: None
-        '''
+        """
+        Registra um novo tipo de componente (ator, sensor, etapa, etc.).
+        
+        Este método é chamado pelos plugins durante setup() para registrar
+        novos tipos de componentes que podem ser usados no sistema.
+        
+        Args:
+            name: Nome do tipo (ex: "GPIOActor", "DS18B20Sensor")
+            clazz: Classe do componente
+        
+        O tipo é registrado no controller apropriado baseado na classe base:
+        - CBPiActor -> ActorController
+        - CBPiSensor -> SensorController
+        - CBPiStep -> StepController
+        - CBPiKettleLogic -> KettleController
+        - etc.
+        """
         logger.debug("Register %s Class %s" % (name, clazz.__name__))
 
+        # Registra no controller apropriado baseado na classe base
         if issubclass(clazz, CBPiActor):
             self.cbpi.actor.types[name] = self._parse_step_props(clazz, name)
 

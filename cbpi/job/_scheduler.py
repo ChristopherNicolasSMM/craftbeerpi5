@@ -69,65 +69,113 @@ class Scheduler(*bases):
         return self._closed
 
     async def spawn(self, coro, name=None, type=None):
+        """
+        Agenda uma nova tarefa (job) para execução.
+        
+        Se houver limite de jobs simultâneos e já estiver no limite,
+        a tarefa é adicionada à fila de espera.
+        
+        Args:
+            coro: Corrotina a ser executada
+            name: Nome da tarefa (para logs e identificação)
+            type: Tipo da tarefa (ex: "background", "step")
+        
+        Returns:
+            Objeto Job criado
+        """
         if self._closed:
             raise RuntimeError("Scheduling a new job after closing")
         job = Job(coro, name, type, self, self._loop)
+        # Verifica se pode iniciar imediatamente ou deve aguardar na fila
         should_start = (self._limit is None or
                         self.active_count < self._limit)
         self._jobs.add(job)
         if should_start:
-            job._start()
+            job._start()  # Inicia imediatamente
         else:
-            # wait for free slot in queue
+            # Aguarda slot livre na fila
             await self._pending.put(job)
         return job
 
     async def close(self):
+        """
+        Fecha o scheduler e cancela todas as tarefas.
+        
+        Processo:
+        1. Marca como fechado (não aceita novas tarefas)
+        2. Limpa fila de espera
+        3. Cancela todas as tarefas ativas
+        4. Aguarda conclusão do cancelamento
+        """
         if self._closed:
             return
-        self._closed = True  # prevent adding new jobs
+        self._closed = True  # Impede adicionar novos jobs
 
         jobs = self._jobs
         if jobs:
-            # cleanup pending queue
-            # all job will be started on closing
+            # Limpa fila de espera
             while not self._pending.empty():
                 self._pending.get_nowait()
+            # Cancela todas as tarefas ativas
             await asyncio.gather(
                 *[job._close(self._close_timeout) for job in jobs],
                 return_exceptions=True)
             self._jobs.clear()
+        # Sinaliza task de tratamento de erros para encerrar
         self._failed_tasks.put_nowait(None)
         await self._failed_task
 
     def call_exception_handler(self, context):
+        """
+        Chama handler de exceções para uma tarefa que falhou.
+        
+        Args:
+            context: Contexto da exceção
+        """
         handler = self._exception_handler
         if handler is None:
+            # Usa handler padrão do event loop
             handler = self._loop.call_exception_handler(context)
         else:
+            # Usa handler customizado
             handler(self, context)
 
     @property
     def exception_handler(self):
+        """Retorna o handler de exceções configurado"""
         return self._exception_handler
 
     def _done(self, job):
-
-
+        """
+        Callback chamado quando uma tarefa completa.
+        
+        Processo:
+        1. Dispara evento de conclusão no Event Bus
+        2. Remove tarefa da lista de ativas
+        3. Se houver espaço e tarefas na fila, inicia próxima
+        
+        Args:
+            job: Tarefa que completou
+        """
+        # Dispara evento de conclusão
         self.cbpi.bus.sync_fire("job/%s/done" % job.type, type=job.type, key=job.name)
-        self._jobs.discard(job)
+        self._jobs.discard(job)  # Remove da lista
+        
+        # Se não houver tarefas na fila, não precisa fazer nada
         if not self.pending_count:
             return
-        # No pending jobs when limit is None
-        # Safe to subtract.
+        
+        # Calcula quantas tarefas podem ser iniciadas
+        # Se limit é None, pode iniciar todas
         ntodo = self._limit - self.active_count
         i = 0
+        # Inicia tarefas da fila até preencher slots disponíveis
         while i < ntodo:
             if not self.pending_count:
                 return
             new_job = self._pending.get_nowait()
             if new_job.closed:
-                continue
+                continue  # Pula tarefas já fechadas
             new_job._start()
             i += 1
 

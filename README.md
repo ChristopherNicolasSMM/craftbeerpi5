@@ -7,7 +7,7 @@
 ![Happy Brewing](https://img.shields.io/badge/CraftBeerPi%205-Happy%20Brewing-%23FBB117)
 
 <p align="center">
-  <img src="https://github.com/craftbeerpi/craftbeerpi4-ui/blob/main/cbpi4ui/public/logo192.png?raw=true" alt="CraftBeerPi Logo"/>
+  <img src="https://github.com/craftbeerpi/craftbeerpi5-ui/blob/main/cbpi5ui/public/logo192.png?raw=true" alt="CraftBeerPi Logo"/>
 </p>
 
 CraftBeerPi 5 is an open source software solution to control the brewing and
@@ -339,7 +339,7 @@ You can find a list of available plugins [here](https://openbrewing.gitbook.io/c
 - **Documentação Completa:** [GitBook - CraftBeerPi 5 Support](https://openbrewing.gitbook.io/craftbeerpi5_support/)
 - **Lista de Plugins:** [Plugin Installation Guide](https://openbrewing.gitbook.io/craftbeerpi5_support/master/plugin-installation#plugin-list)
 - **Repositório GitHub:** [craftbeerpi5](https://github.com/ChristopherNicolasSMM/craftbeerpi5)
-- **Repositório Original:** [craftbeerpi4](https://github.com/craftbeerpi/craftbeerpi4)
+- **Repositório Original:** [craftbeerpi5](https://github.com/craftbeerpi/craftbeerpi5)
 
 ---
 

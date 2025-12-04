@@ -15,40 +15,80 @@ from cbpi.controller.basic_controller2 import BasicController
 from tabulate import tabulate
 import sys, os
 from ..api.step import CBPiStep, StepMove, StepResult, StepState, CBPiFermentationStep
-          
+
+"""
+================================================================================
+CONTROLLER: FermentationController
+================================================================================
+Gerencia fermentadores e processos de fermentação.
+
+Responsabilidades:
+- Gerenciar fermentadores (criação, atualização, remoção)
+- Controlar lógica de fermentação (temperatura, pressão)
+- Gerenciar etapas de fermentação
+- Persistir dados em fermenter_data.json
+
+Diferente de outros controllers, este não herda de BasicController
+porque tem lógica mais complexa relacionada a etapas de fermentação.
+"""
 class FermentationController:
 
     def __init__(self, cbpi):
-        self.update_key = "fermenterupdate"
+        """
+        Inicializa o controller de fermentação.
+        
+        Args:
+            cbpi: Instância principal do CraftBeerPi
+        """
+        self.update_key = "fermenterupdate"  # Chave para atualizações via WebSocket
         self.cbpi = cbpi
         self.logger = logging.getLogger(__name__)
-        self.path = self.cbpi.config_folder.get_file_path("fermenter_data.json")
-        self.data = []
-        self.types = {}
-        self.steptypes = {}
-        self.cbpi.app.on_cleanup.append(self.shutdown)
+        self.path = self.cbpi.config_folder.get_file_path("fermenter_data.json")  # Arquivo de persistência
+        self.data = []  # Lista de fermentadores
+        self.types = {}  # Tipos de lógicas de fermentação registradas
+        self.steptypes = {}  # Tipos de etapas de fermentação registradas
+        self.cbpi.app.on_cleanup.append(self.shutdown)  # Registra limpeza ao encerrar
 
     async def init(self):
+        """
+        Inicializa o controller e carrega fermentadores salvos.
+        """
         logging.info("INIT Fermentation Controller")
-        self.check_fermenter_file()
-        await self.load()
+        self.check_fermenter_file()  # Verifica/cria arquivo se necessário
+        await self.load()  # Carrega fermentadores do arquivo
         pass
 
     def check_fermenter_file(self):
+        """
+        Verifica se arquivo de fermentadores existe, cria se não existir.
+        
+        Também cria pasta de receitas de fermentação se não existir.
+        """
         if os.path.exists(self.cbpi.config_folder.get_file_path("fermenter_data.json")) is False:
             logging.info("INIT fermenter_data.json file")
+            # Cria arquivo vazio com estrutura básica
             data = {
-                    "data": [
-                            ]
+                    "data": []
                     }
             destfile = self.cbpi.config_folder.get_file_path("fermenter_data.json")
-            json.dump(data,open(destfile,'w'),indent=4, sort_keys=True)
+            json.dump(data, open(destfile, 'w'), indent=4, sort_keys=True)
         
+        # Cria pasta de receitas de fermentação se não existir
         pathlib.Path(self.cbpi.config_folder.get_file_path("fermenterrecipes")).mkdir(parents=True, exist_ok=True)
 
     async def shutdown(self, app=None, fermenterid=None):
+        """
+        Executa limpeza ao encerrar o sistema.
+        
+        Para todas as etapas de fermentação em execução e salva dados.
+        
+        Args:
+            app: Aplicação web (opcional)
+            fermenterid: ID específico do fermentador (opcional, None = todos)
+        """
         self.save()
         if (fermenterid == None):
+            # Para todas as etapas de todos os fermentadores
             for fermenter in self.data:
                 self.logger.info("Shutdown {}".format(fermenter.name))
                 for step in fermenter.steps:

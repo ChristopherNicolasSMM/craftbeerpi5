@@ -3,46 +3,61 @@ from aiohttp import web
 from cbpi.api import *
 auth = False
 
+"""
+================================================================================
+HTTP ENDPOINTS: ActorHttpEndpoints
+================================================================================
+Endpoints HTTP para gerenciamento de atuadores via API REST.
+
+Este módulo expõe a API REST para:
+- Listar todos os atuadores
+- Obter um atuador específico
+- Criar novo atuador
+- Atualizar atuador existente
+- Deletar atuador
+- Controlar atuadores (ligar/desligar, ajustar potência)
+
+Todos os endpoints são registrados automaticamente em /api/actor
+quando o objeto é criado.
+"""
 class ActorHttpEndpoints():
 
     def __init__(self, cbpi):
+        """
+        Inicializa os endpoints HTTP de atuadores.
+        
+        Args:
+            cbpi: Instância principal do CraftBeerPi
+        """
         self.cbpi = cbpi
-        self.controller = cbpi.actor
+        self.controller = cbpi.actor  # Referência ao ActorController
+        # Registra automaticamente todos os métodos com @request_mapping
         self.cbpi.register(self, "/actor")
 
     @request_mapping(path="/", auth_required=False)
     async def http_get_all(self, request):
         """
-
-        ---
-        description: Switch actor on
-        tags:
-        - Actor
-        responses:
-            "204":
-                description: successful operation
+        Endpoint: GET /api/actor/
+        
+        Retorna lista de todos os atuadores com seus estados e tipos disponíveis.
+        
+        Returns:
+            JSON com estrutura: {data: [...], types: {...}}
         """
         return web.json_response(data=self.controller.get_state())
 
     @request_mapping(path=r"/{id:\w+}", auth_required=False)
     async def http_get_one(self, request):
         """
-        ---
-        description: Get one Actor
-        tags:
-        - Actor
-        parameters:
-        - name: "id"
-          in: "path"
-          description: "Actor ID"
-          required: true
-          type: "integer"
-          format: "int64"
-        responses:
-            "200":
-                description: successful operation
-            "404":
-                description: Actor not found
+        Endpoint: GET /api/actor/{id}
+        
+        Retorna dados de um atuador específico.
+        
+        Args:
+            request: Requisição HTTP (contém id no match_info)
+        
+        Returns:
+            JSON com dados do atuador ou 404 se não encontrado
         """
         actor = self.controller.find_by_id(request.match_info['id'])
         if (actor is None):

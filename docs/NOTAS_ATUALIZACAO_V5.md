@@ -429,8 +429,18 @@ Este arquivo será atualizado conforme novas mudanças forem realizadas. Use est
 - ✅ Criação de documentação completa para desenvolvedores
 - ✅ Criação de manual do usuário
 
+#### Atualização de Referência da UI
+- ✅ **Data**: 2024
+- ✅ **Mudança**: Referência do `cbpi5ui` alterada de PyPI para repositório GitHub
+- ✅ **Repositório**: `https://github.com/ChristopherNicolasSMM/craftbeerpi5-ui.git@main`
+- ✅ **Arquivos Afetados**:
+  - `requirements.txt` - Comentada referência PyPI, adicionada referência GitHub
+  - `setup.py` - Comentada referência PyPI, adicionada referência GitHub
+- ✅ **Motivo**: Usar versão customizada da UI do repositório próprio
+- ✅ **Reversão**: Referências originais mantidas comentadas para fácil reversão
+
 ---
 
 **Última Atualização**: 2024  
-**Versão do Documento**: 1.0.0
+**Versão do Documento**: 1.0.1
 

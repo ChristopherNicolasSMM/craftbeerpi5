@@ -7,6 +7,7 @@ dist
 cbpi.egg-info
 log
 venv
+venvCraftbeerPi/
 cbpi/extension/ui
 node_modules
 .DS_STORE
@@ -17,3 +18,6 @@ node_modules
 config/*
 logs/
 .coverage
+__pycache__/
+*.pyc
+*.pyo

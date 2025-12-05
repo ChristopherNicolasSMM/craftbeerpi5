@@ -1,0 +1,1 @@
+pip install --upgrade --force-reinstall git+https://github.com/ChristopherNicolasSMM/craftbeerpi5-ui.git@main
